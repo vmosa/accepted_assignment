@@ -1,0 +1,7 @@
+@Api_HostAddress = http://localhost:5225
+@Api_Version = v1
+
+GET {{Api_HostAddress}}/api/{{Api_Version}}/getproducts
+Accept: application/json
+
+###
