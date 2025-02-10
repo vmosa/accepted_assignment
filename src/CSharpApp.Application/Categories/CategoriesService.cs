@@ -18,9 +18,24 @@ public class CategoriesService : ICategoriesService
 
     public async Task<IReadOnlyCollection<Category>> GetCategories()
     {
-        var response = await _httpClient.GetAsync("");
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+
+        string? content = null;
+        try
+        {
+            var response = await _httpClient.GetAsync("");
+            response.EnsureSuccessStatusCode();
+            content = await response.Content.ReadAsStringAsync();
+        }
+        catch (HttpRequestException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("Response content could not be read properly"));
+        }
+
+
         try
         {
             var res = JsonSerializer.Deserialize<List<Category>>(content);
@@ -31,21 +46,64 @@ public class CategoriesService : ICategoriesService
             throw new Exception(string.Format("OriginalExceptionMessage: {0} \n Unable to deserialize the result: \n {1}", e.Message, content), e.InnerException);
         }
     }
-    public async Task<string> CreateCategory(Category? category)
+    public async Task<Category> CreateCategory(Category? category)
     {
 
-        var json = JsonSerializer.Serialize(category);
-        var data = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("", data);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStringAsync();
+        string? content = null;
+        try
+        {
+
+            var json = JsonSerializer.Serialize(category);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("", data);
+            response.EnsureSuccessStatusCode();
+            content = await response.Content.ReadAsStringAsync();
+        }
+        catch (HttpRequestException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("Response content could not be read properly"));
+        }
+
+
+        try
+        {
+            var res = JsonSerializer.Deserialize<Category>(content);
+            return res;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("OriginalExceptionMessage: {0} \n Unable to deserialize the result: \n {1}", e.Message, content), e.InnerException);
+        }
+
     }
     public async Task<Category> GetCategory(int id)
     {
-        var newUri = string.Format("/{0}", id);
-        var response = await _httpClient.GetAsync(newUri);
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+
+        string? content = null;
+        try {
+
+            var newUri = string.Format("/{0}", id);
+            var response = await _httpClient.GetAsync(newUri);
+            response.EnsureSuccessStatusCode();
+            content = await response.Content.ReadAsStringAsync();
+
+        }
+        catch (HttpRequestException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("Response content could not be read properly"));
+        }
+
+        
+        
+        
         try
         {
             var res = JsonSerializer.Deserialize<Category>(content);

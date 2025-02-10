@@ -21,13 +21,26 @@ public class ProductsService : IProductsService
 
     public async Task<IReadOnlyCollection<Product>> GetProducts()
     {
-
-        var response = await _httpClient.GetAsync("");
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+        string? content = null;
         try
         {
-            var res = JsonSerializer.Deserialize<List<Product>>(content);
+            var response = await _httpClient.GetAsync("");
+            response.EnsureSuccessStatusCode();
+            content = await response.Content.ReadAsStringAsync();
+        }
+        catch (HttpRequestException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("Response content could not be read properly"));
+        }
+
+
+        try
+        {
+            var res = JsonSerializer.Deserialize<IList<Product>>(content);
 
             return res.AsReadOnly();
         }
@@ -41,11 +54,22 @@ public class ProductsService : IProductsService
     
     public async Task<Product> GetProduct(int id)
     {
-                
-        var newUri = string.Format("/{0}", id);
-        var response = await _httpClient.GetAsync(newUri);
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
+        string? content = null;
+        try
+        {
+            var newUri = string.Format("/{0}", id);
+            var response = await _httpClient.GetAsync(newUri);
+            response.EnsureSuccessStatusCode();
+            content = await response.Content.ReadAsStringAsync();
+        }
+        catch (HttpRequestException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("Response content could not be read properly"));
+        }
 
         try
         {
@@ -62,16 +86,37 @@ public class ProductsService : IProductsService
        
     }
 
-    public async Task<string> CreateProduct(Product? product)
+    public async Task<Product> CreateProduct(Product? product)
     {
-      
-        var jsonContent = new StringContent(JsonSerializer.Serialize(product));
-        var response = await _httpClient.PostAsync("",jsonContent);
-        //response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
 
-        //var res = JsonSerializer.Deserialize<Product>(content);
+        string? content = null;
+        try
+        {
+            var jsonContent = new StringContent(JsonSerializer.Serialize(product));
+            var response = await _httpClient.PostAsync("", jsonContent);
+            response.EnsureSuccessStatusCode();
+            content = await response.Content.ReadAsStringAsync();
+        }
+        catch (HttpRequestException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(string.Format("Response content could not be read properly"));
+        }
 
-        return content;
+        try
+        {
+            var res = JsonSerializer.Deserialize<Product>(content);
+
+            return res;
+        }
+        catch (Exception e)
+        {
+
+            throw new Exception(string.Format("OriginalExceptionMessage: {0} \n Unable to deserialize the result: \n {1}", e.Message, content), e.InnerException);
+        }
+
     }
 }
