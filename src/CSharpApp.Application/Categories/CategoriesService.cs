@@ -1,77 +1,59 @@
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace CSharpApp.Application.Products;
+namespace CSharpApp.Application.Categories;
 
-public class ProductsService : IProductsService
+public class CategoriesService : ICategoriesService
 {
     private readonly HttpClient _httpClient;
     private readonly RestApiSettings _restApiSettings;
-    private readonly ILogger<ProductsService> _logger;
+    private readonly ILogger<CategoriesService> _logger;
 
-    public ProductsService(IOptions<RestApiSettings> restApiSettings,
-        ILogger<ProductsService> logger, HttpClient httpClient
-        )
+    public CategoriesService(IOptions<RestApiSettings> restApiSettings, HttpClient httpClient, ILogger<CategoriesService> logger)
     {
         _httpClient = httpClient;
         _restApiSettings = restApiSettings.Value;
         _logger = logger;
-
     }
 
-    public async Task<IReadOnlyCollection<Product>> GetProducts()
+    public async Task<IReadOnlyCollection<Category>> GetCategories()
     {
-
         var response = await _httpClient.GetAsync("");
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         try
         {
-            var res = JsonSerializer.Deserialize<List<Product>>(content);
-
+            var res = JsonSerializer.Deserialize<List<Category>>(content);
             return res.AsReadOnly();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            
             throw new Exception(string.Format("OriginalExceptionMessage: {0} \n Unable to deserialize the result: \n {1}", e.Message, content), e.InnerException);
         }
-        
     }
-    
-    public async Task<Product> GetProduct(int id)
+    public async Task<string> CreateCategory(Category? category)
     {
-                
+
+        var json = JsonSerializer.Serialize(category);
+        var data = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("", data);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsStringAsync();
+    }
+    public async Task<Category> GetCategory(int id)
+    {
         var newUri = string.Format("/{0}", id);
         var response = await _httpClient.GetAsync(newUri);
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-
         try
         {
-            var res = JsonSerializer.Deserialize<Product>(content);
-
+            var res = JsonSerializer.Deserialize<Category>(content);
             return res;
         }
         catch (Exception e)
         {
-
             throw new Exception(string.Format("OriginalExceptionMessage: {0} \n Unable to deserialize the result: \n {1}", e.Message, content), e.InnerException);
         }
-
-       
-    }
-
-    public async Task<string> CreateProduct(Product? product)
-    {
-      
-        var jsonContent = new StringContent(JsonSerializer.Serialize(product));
-        var response = await _httpClient.PostAsync("",jsonContent);
-        //response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-
-        //var res = JsonSerializer.Deserialize<Product>(content);
-
-        return content;
     }
 }
