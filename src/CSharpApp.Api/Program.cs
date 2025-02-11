@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Autofac.Core;
 using CSharpApp.Application.Products;
 using CSharpApp.Core.Dtos;
 using CSharpApp.Core.Settings;
@@ -10,8 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 var logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+
 builder.Logging.ClearProviders().AddSerilog(logger);
 
+builder.Services.AddTransient<AuthorizationMessageHandler>();
+builder.Services.AddTransient<LoggingMessageHandler>();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -20,7 +24,7 @@ builder.Services.AddDefaultConfiguration();
 builder.Services.AddHttpConfiguration();
 builder.Services.AddProblemDetails();
 builder.Services.AddApiVersioning();
-
+builder.Services.AddMemoryCache();
 
 
 var app = builder.Build();

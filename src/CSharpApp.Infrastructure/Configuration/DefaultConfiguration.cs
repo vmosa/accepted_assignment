@@ -14,6 +14,7 @@ public static class DefaultConfiguration
         services.AddSingleton<IProductsService, ProductsService>();
         services.AddSingleton<ICategoriesService, CategoriesService>();
         
+        
         return services;
     }
 
