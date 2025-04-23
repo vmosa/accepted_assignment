@@ -5,7 +5,10 @@
 
 
 trigger:
-- main
+  branches:
+    include:
+    - main
+  batch: true
 
 stages: 
 - stage: 'Migrations'
